@@ -1,155 +1,171 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Labyrinth - MVP Kausalitas 2D</title>
+    <title>Labyrinth - Casual Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+        body { 
+            /* Latar belakang pemandangan sederhana (biru langit dan hijau) */
+            background: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 60%, #4ade80 60%, #22c55e 100%);
+            font-family: 'Nunito', sans-serif; 
+            overflow: hidden; 
+        }
+        
+        /* Elemen UI Casual Game */
+        .panel-casual {
+            background-color: #fde68a; /* Krim kekuningan */
+            border: 8px solid #ffffff;
+            border-radius: 36px;
+            box-shadow: 0 10px 0 rgba(217, 119, 6, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Grid 2D System */
+        .panel-inner {
+            background-color: #fef3c7;
+            border: 4px solid #f59e0b;
+            border-radius: 24px;
+        }
+
+        .btn-casual {
+            background-color: #84cc16; /* Hijau cerah */
+            border: 4px solid #ffffff;
+            border-radius: 9999px;
+            color: white;
+            text-transform: uppercase;
+            box-shadow: 0 6px 0 #4d7c0f, 0 10px 10px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+
+        .btn-casual:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #4d7c0f, 0 4px 4px rgba(0,0,0,0.2);
+        }
+
+        .badge-casual {
+            background-color: #84cc16;
+            border: 4px solid #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 4px 0 #4d7c0f;
+        }
+
+        /* Editor Teks yang lebih ramah */
+        textarea {
+            background-color: transparent;
+            color: #78350f; /* Coklat tua agar tidak terlalu kontras seperti hitam */
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            resize: none;
+            outline: none;
+        }
+
+        /* Grid Game Alam */
         .game-board {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 4px;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
             aspect-ratio: 1/1;
-            background-color: #1e293b;
+            background-color: #8b5cf6; /* Warna border ungu/gelap pembatas */
             padding: 8px;
-            border-radius: 8px;
-            border: 2px solid #334155;
+            border-radius: 16px;
+            border: 6px solid #ffffff;
+            box-shadow: 0 8px 0 rgba(139, 92, 246, 0.4);
         }
 
         .cell {
-            background-color: #0f172a;
-            border: 1px solid #1e293b;
-            border-radius: 4px;
+            background-color: #a3e635; /* Hijau rumput */
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             position: relative;
-            transition: background-color 0.2s;
+            box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
 
-        /* Entities */
-        .wall {
-            background-color: #475569;
-            border-color: #64748b;
+        /* Entitas di Papan */
+        .wall { 
+            background-color: #fb923c; 
+            box-shadow: inset 0 -6px 0 #ea580c;
         }
-
-        .wall::after {
-            content: '\f485';
-            font-family: 'FontAwesome';
-            color: #94a3b8;
-            font-size: 1rem;
+        .wall::after { content: '\f1bb'; font-family: 'FontAwesome'; color: rgba(255,255,255,0.5); font-size: 1.5rem;}
+        
+        .coin::after { 
+            content: '\f005'; /* Bintang */
+            font-family: 'FontAwesome'; 
+            color: #fbbf24; 
+            font-size: 2rem; 
+            -webkit-text-stroke: 2px #b45309;
+            animation: float 2s ease-in-out infinite;
         }
-
-        .coin::after {
-            content: '\f111';
-            font-family: 'FontAwesome';
-            color: #fbbf24;
-            font-size: 0.8rem;
-            text-shadow: 0 0 8px #fbbf24;
-        }
-
+        
         .robot::before {
-            content: '\f898';
-            /* Robot icon */
+            content: '\f6e2'; /* Karakter Hantu/Pacman */
             font-family: 'FontAwesome';
-            color: #22d3ee;
-            font-size: 1.8rem;
+            color: #ef4444; /* Merah ceria */
+            font-size: 2.2rem;
             position: absolute;
             z-index: 10;
-            text-shadow: 0 0 10px #22d3ee;
-            animation: pulse 1.5s infinite;
+            -webkit-text-stroke: 2px white;
+            animation: bounce 0.5s infinite alternate;
         }
 
-        /* Syntax & Editor styles */
-        textarea {
-            background-color: #020617;
-            color: #a78bfa;
-            font-family: 'Courier New', Courier, monospace;
-            resize: none;
-            outline: none;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
-        .log-active {
-            border-left: 4px solid #22d3ee;
-            background-color: #164e63;
-            color: #fff;
+        @keyframes bounce {
+            from { transform: scale(1) translateY(0); }
+            to { transform: scale(1.1) translateY(-4px); }
         }
 
-        .log-error {
-            border-left: 4px solid #ef4444;
-            background-color: #7f1d1d;
-            color: #fca5a5;
-        }
-
-        .log-success {
-            border-left: 4px solid #22c55e;
-            background-color: #14532d;
-            color: #bbf7d0;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
+        /* Log Notifikasi */
+        .log-item { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; margin-bottom: 4px; color: #475569;}
+        .log-active { border-color: #3b82f6; color: #1d4ed8; font-weight: 800;}
+        .log-error { border-color: #ef4444; background: #fee2e2; color: #b91c1c; }
+        .log-success { border-color: #22c55e; background: #dcfce7; color: #15803d; }
     </style>
 </head>
+<body class="h-screen w-screen flex flex-col p-4 md:p-8 gap-8 relative">
 
-<body class="h-screen w-screen flex flex-col">
-
-    <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center z-10">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-microchip text-cyan-400 text-xl"></i>
-            <div>
-                <h1 class="font-bold text-lg text-white leading-tight">Labyrinth MVP</h1>
-                <p class="text-xs text-slate-400">Pembuktian Logika Kausalitas</p>
-            </div>
+    <!-- Header / Top Bar -->
+    <header class="flex justify-between items-center z-10 w-full max-w-6xl mx-auto">
+        <button class="bg-amber-400 border-4 border-white rounded-full w-14 h-14 flex items-center justify-center text-white text-2xl shadow-[0_6px_0_#b45309] active:translate-y-[6px] active:shadow-none">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        
+        <div class="badge-casual px-8 py-2 text-white font-black text-2xl -mt-2">
+            LEVEL 1
         </div>
-        <div class="flex gap-2 text-xs font-bold">
-            <span class="bg-slate-800 text-slate-300 px-3 py-1 rounded">Level: 1 (Pengenalan Sequence)</span>
+
+        <div class="bg-white border-4 border-slate-200 rounded-full px-6 py-2 flex items-center gap-2 shadow-md">
+            <i class="fa-solid fa-star text-yellow-400 text-xl"></i>
+            <span id="scoreText" class="text-slate-700 font-black text-xl">0 / 2</span>
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
-
-        <section class="w-full md:w-1/2 flex flex-col border-r border-slate-700 bg-slate-900">
-            <div class="bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300 flex justify-between items-center">
-                <span><i class="fa-brands fa-python text-blue-400 mr-2"></i>script.py</span>
-                <button onclick="executeCode()"
-                    class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-1.5 rounded transition-colors shadow-[0_0_10px_rgba(8,145,178,0.5)]">
-                    <i class="fa-solid fa-play mr-1"></i> RUN CODE
-                </button>
+    <!-- Area Permainan Utama -->
+    <main class="flex-1 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto w-full z-10">
+        
+        <!-- PANEL KIRI: Editor Kode -->
+        <section class="panel-casual w-full md:w-1/2 flex flex-col relative mt-6">
+            <div class="badge-casual absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-2 text-white font-black tracking-widest text-lg shadow-sm">
+                ALGORITMA
             </div>
-
-            <div class="flex-1 relative">
-                <textarea id="codeEditor"
-                    class="w-full h-full p-4 text-sm leading-loose focus:ring-inset focus:ring-1 focus:ring-cyan-500"
-                    spellcheck="false">
-# Instruksi Level: Ambil 2 paket data (kuning)
-# Hindari tembok (abu-abu)
+            
+            <div class="flex-1 p-6 pt-10 flex flex-col gap-4">
+                <div class="panel-inner flex-1 p-4 shadow-inner relative">
+                    <textarea id="codeEditor" class="w-full h-full text-sm leading-relaxed" spellcheck="false">
+# Kumpulkan 2 Bintang 
+# Hindari blok oranye
 
 move_right()
 move_right()
@@ -158,51 +174,62 @@ move_down()
 move_down()
 move_left()
 collect()
-                </textarea>
-            </div>
+                    </textarea>
+                </div>
 
-            <div class="h-1/3 bg-slate-950 border-t border-slate-700 flex flex-col">
-                <div
-                    class="bg-slate-800 px-4 py-1 text-xs text-slate-400 border-b border-slate-700 uppercase tracking-widest">
-                    System Trace / Log</div>
-                <div id="consoleLog" class="flex-1 overflow-y-auto p-2 text-xs font-mono space-y-1">
-                    <div class="text-slate-500">>> Sistem siap. Menunggu input instruksi...</div>
+                <div class="flex items-center gap-4">
+                    <button onclick="executeCode()" class="btn-casual flex-1 py-3 text-xl font-black">
+                        <i class="fa-solid fa-play mr-2"></i> JALANKAN
+                    </button>
+                    <button onclick="resetGame()" class="bg-rose-400 border-4 border-white rounded-2xl w-16 h-14 flex items-center justify-center text-white text-xl shadow-[0_6px_0_#be123c] active:translate-y-[6px] active:shadow-none">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
                 </div>
             </div>
         </section>
 
-        <section class="w-full md:w-1/2 bg-slate-900 flex flex-col items-center justify-center relative p-4">
+        <!-- PANEL KANAN: Visualisasi Papan -->
+        <section class="panel-casual w-full md:w-1/2 flex flex-col relative mt-6 pb-6">
+            <div class="badge-casual absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-2 text-white font-black tracking-widest text-lg shadow-sm">
+                SIMULASI
+            </div>
+            
+            <div class="flex-1 flex flex-col items-center justify-center pt-8 gap-4 px-6">
+                <!-- Papan Game -->
+                <div id="gameBoard" class="game-board">
+                    <!-- Sel di-generate oleh JS -->
+                </div>
 
-            <div class="mb-6 text-center">
-                <h2 class="text-cyan-400 font-bold mb-1"><i class="fa-solid fa-satellite-dish mr-2"></i>Live Telemetry
-                </h2>
-                <p class="text-xs text-slate-400">Target: 2 Paket Data | Status: Menunggu Eksekusi</p>
+                <!-- Log Notifikasi Lucu -->
+                <div class="w-full max-w-sm bg-white/50 rounded-xl p-2 border-2 border-white/60 h-28 flex flex-col shadow-inner overflow-hidden">
+                    <div id="consoleLog" class="flex-1 overflow-y-auto text-xs font-bold space-y-1">
+                        <div class="log-item">Selamat datang! Ketik kodemu dan tekan Jalankan.</div>
+                    </div>
+                </div>
             </div>
 
-            <div id="gameBoard" class="game-board shadow-[0_0_30px_rgba(15,23,42,1)]">
-            </div>
-
-            <div id="statusOverlay"
-                class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm hidden flex-col items-center justify-center z-20">
-                <h1 id="statusText" class="text-4xl font-bold mb-4">MISSION PASSED</h1>
-                <p id="statusDesc" class="text-slate-300 mb-6 text-center max-w-sm">Logika komputasional valid. Semua
-                    paket data berhasil diakuisisi.</p>
-                <button onclick="resetGame()"
-                    class="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded font-bold transition-colors border border-slate-500">
-                    <i class="fa-solid fa-rotate-right mr-2"></i>Reset Simulasi
-                </button>
+            <!-- Overlay Kemenangan (Disembunyikan secara default) -->
+            <div id="statusOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-[28px] hidden flex-col items-center justify-center z-20">
+                <div class="bg-white border-8 border-yellow-400 rounded-3xl p-8 flex flex-col items-center shadow-2xl transform scale-110">
+                    <i id="statusIcon" class="fa-solid fa-award text-6xl text-yellow-400 mb-4 drop-shadow-md"></i>
+                    <h1 id="statusText" class="text-3xl font-black text-slate-800 mb-2">HEBAT!</h1>
+                    <p id="statusDesc" class="text-slate-500 font-bold mb-6 text-center">Kamu berhasil menyelesaikan level ini.</p>
+                    <div class="flex gap-4">
+                        <button onclick="resetGame()" class="bg-slate-300 border-4 border-white text-slate-600 rounded-full w-14 h-14 text-xl shadow-[0_4px_0_#94a3b8] active:translate-y-[4px] active:shadow-none">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button onclick="resetGame()" class="btn-casual px-8 py-2 text-xl shadow-[0_4px_0_#4d7c0f]">
+                            LANJUT <i class="fa-solid fa-forward-step ml-2"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </section>
     </main>
 
     <script>
-        // ---------------------------------------------------------
-        // ARSITEKTUR SIMULASI LOGIKA (Tugas Alya ke depannya)
-        // ---------------------------------------------------------
-
-        // Definisi Matriks Ruang (5x5)
-        // 0 = Kosong, 1 = Tembok, 2 = Paket Data (Coin)
+        // Logika Game Tetap Sama, Hanya Estetika yang Berubah
         const initialMap = [
             [0, 0, 2, 0, 0],
             [1, 1, 0, 1, 0],
@@ -217,178 +244,164 @@ collect()
         const totalCoins = 2;
         let isExecuting = false;
 
-        // Inisialisasi Game
         function initGame() {
-            currentMap = JSON.parse(JSON.stringify(initialMap)); // Deep copy
+            currentMap = JSON.parse(JSON.stringify(initialMap));
             robotPos = { x: 0, y: 0 };
             collectedCoins = 0;
+            updateScore();
             renderBoard();
-            logMsg(">> Matriks diatur ulang. Posisi robot: (0,0)", "text-slate-500");
         }
 
-        // Render Matriks ke DOM (Tugas Prima ke depannya dengan Phaser)
         function renderBoard() {
             const board = document.getElementById('gameBoard');
-            board.innerHTML = ''; // Bersihkan
+            board.innerHTML = ''; 
 
             for (let y = 0; y < 5; y++) {
                 for (let x = 0; x < 5; x++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
-
-                    // Render entitas map
+                    
                     if (currentMap[y][x] === 1) cell.classList.add('wall');
                     if (currentMap[y][x] === 2) cell.classList.add('coin');
-
-                    // Render Robot
+                    
                     if (robotPos.x === x && robotPos.y === y) {
                         cell.classList.add('robot');
                     }
-
                     board.appendChild(cell);
                 }
             }
         }
 
-        // Fungsi Logging Terminal
-        function logMsg(text, className) {
+        function updateScore() {
+            document.getElementById('scoreText').innerText = `${collectedCoins} / ${totalCoins}`;
+        }
+
+        function logMsg(text, className = "log-item") {
             const consoleDiv = document.getElementById('consoleLog');
             const logEl = document.createElement('div');
-            logEl.className = `p-1 px-3 ${className}`;
+            logEl.className = `log-item ${className}`;
             logEl.innerText = text;
             consoleDiv.appendChild(logEl);
-            consoleDiv.scrollTop = consoleDiv.scrollHeight; // Auto scroll
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
         }
 
         function clearLog() {
             document.getElementById('consoleLog').innerHTML = '';
         }
 
-        // ---------------------------------------------------------
-        // PARSER & EXECUTION ENGINE (Pengganti Web Worker sementara)
-        // ---------------------------------------------------------
-
         async function executeCode() {
-            if (isExecuting) return; // Cegah double klik
-
+            if (isExecuting) return; 
+            
             document.getElementById('statusOverlay').classList.add('hidden');
             initGame();
             clearLog();
-
+            
             const codeText = document.getElementById('codeEditor').value;
-            // Parsing baris per baris, abaikan komentar dan baris kosong
             const lines = codeText.split('\n')
                 .map(line => line.trim())
                 .filter(line => line !== '' && !line.startsWith('#'));
 
             isExecuting = true;
-            logMsg(">> Memulai kompilasi dan eksekusi...", "text-cyan-400 font-bold");
+            logMsg("Memulai langkah...", "log-active");
 
-            let stepDelay = 600; // 600ms per langkah untuk mendemonstrasikan proses
+            let stepDelay = 600; 
             let errorOccurred = false;
 
-            // Eksekusi Berurutan (Async Loop)
             for (let i = 0; i < lines.length; i++) {
-                if (errorOccurred) break;
-
+                if(errorOccurred) break;
+                
                 const cmd = lines[i];
-                logMsg(`Mengeksekusi: ${cmd}`, "log-active");
-
-                // Animasi jeda untuk mendemonstrasikan proses komputasi
-                await new Promise(r => setTimeout(r, stepDelay));
+                logMsg(`Menjalankan: ${cmd}`, "log-active");
+                
+                await new Promise(r => setTimeout(r, stepDelay)); 
 
                 let newX = robotPos.x;
                 let newY = robotPos.y;
 
-                // Logika Pemrosesan Fungsi
                 if (cmd === 'move_right()') newX += 1;
                 else if (cmd === 'move_left()') newX -= 1;
                 else if (cmd === 'move_down()') newY += 1;
                 else if (cmd === 'move_up()') newY -= 1;
                 else if (cmd === 'collect()') {
                     if (currentMap[robotPos.y][robotPos.x] === 2) {
-                        currentMap[robotPos.y][robotPos.x] = 0; // Koin hilang
+                        currentMap[robotPos.y][robotPos.x] = 0; 
                         collectedCoins++;
-                        logMsg(`[SUCCESS] Paket data diakuisisi! (${collectedCoins}/${totalCoins})`, "text-yellow-400");
+                        updateScore();
+                        logMsg(`Yeay! Bintang didapatkan!`, "log-success");
                         renderBoard();
                     } else {
-                        logMsg(`[WARNING] Tidak ada paket data di koordinat (${robotPos.x}, ${robotPos.y})`, "text-orange-400");
+                        logMsg(`Ups, tidak ada bintang di sini.`, "log-error");
                     }
                     continue;
                 } else {
-                    logMsg(`[FATAL ERROR] Sintaks tidak dikenali: '${cmd}'`, "log-error");
+                    logMsg(`Kode salah: '${cmd}'`, "log-error");
                     errorOccurred = true;
-                    showEndScreen(false, "SyntaxError: Fungsi tidak didefinisikan dalam API internal.");
+                    showEndScreen(false, "Kode yang kamu ketik tidak dikenali.");
                     break;
                 }
 
-                // Validasi Tabrakan & Batas (State Management Alya)
                 if (newX < 0 || newX > 4 || newY < 0 || newY > 4) {
-                    logMsg(`[CRITICAL ERROR] Robot keluar dari batas matriks!`, "log-error");
+                    logMsg(`Awas jatuh! Keluar batas.`, "log-error");
                     errorOccurred = true;
-                    showEndScreen(false, "IndexOutOfBounds: Entitas menabrak batas perimeter.");
+                    showEndScreen(false, "Karaktermu keluar dari area permainan!");
                     break;
                 }
-
+                
                 if (currentMap[newY][newX] === 1) {
-                    logMsg(`[CRITICAL ERROR] Terjadi benturan fisik dengan tembok di (${newX}, ${newY})`, "log-error");
+                    logMsg(`Aduh! Menabrak blok.`, "log-error");
                     errorOccurred = true;
-                    showEndScreen(false, "CollisionError: Entitas hancur menabrak firewall/tembok.");
+                    showEndScreen(false, "Karaktermu menabrak halangan.");
                     break;
                 }
 
-                // Update posisi jika valid
                 robotPos.x = newX;
                 robotPos.y = newY;
                 renderBoard();
             }
 
-            // Evaluasi Kemenangan di akhir kode
             if (!errorOccurred) {
                 if (collectedCoins === totalCoins) {
-                    logMsg(">> SIMULASI SELESAI: Kondisi kemenangan terpenuhi.", "log-success");
-                    showEndScreen(true, "Logika komputasional valid. Semua paket data berhasil diakuisisi.");
+                    logMsg("Hore! Level Selesai.", "log-success");
+                    showEndScreen(true, "Kamu berhasil menyelesaikan tantangan ini!");
                 } else {
-                    logMsg(`>> SIMULASI SELESAI: Skrip berakhir, namun masih ada ${totalCoins - collectedCoins} paket data tersisa.`, "log-error");
-                    showEndScreen(false, "LogicError: Skrip berakhir sebelum tujuan simulasi tercapai.");
+                    logMsg(`Masih kurang ${totalCoins - collectedCoins} bintang.`, "log-error");
+                    showEndScreen(false, "Kodenya selesai, tapi masih ada bintang yang tertinggal.");
                 }
             }
 
             isExecuting = false;
         }
 
-        // Antarmuka Hasil (Tugas Zahra ke depannya)
         function showEndScreen(isSuccess, desc) {
             const overlay = document.getElementById('statusOverlay');
             const title = document.getElementById('statusText');
             const descText = document.getElementById('statusDesc');
+            const icon = document.getElementById('statusIcon');
 
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
-
+            
             descText.innerText = desc;
 
             if (isSuccess) {
-                title.innerText = "SIMULASI BERHASIL";
-                title.className = "text-4xl font-bold mb-4 text-green-400 text-shadow-green";
+                title.innerText = "HEBAT!";
+                title.className = "text-3xl font-black text-green-500 mb-2";
+                icon.className = "fa-solid fa-award text-6xl text-yellow-400 mb-4 drop-shadow-md";
             } else {
-                title.innerText = "SIMULASI GAGAL";
-                title.className = "text-4xl font-bold mb-4 text-red-500 text-shadow-red";
+                title.innerText = "YAHH GAGAL!";
+                title.className = "text-3xl font-black text-red-500 mb-2";
+                icon.className = "fa-solid fa-face-frown-open text-6xl text-red-400 mb-4 drop-shadow-md";
             }
         }
 
         function resetGame() {
             document.getElementById('statusOverlay').classList.add('hidden');
-            document.getElementById('codeEditor').value = "# Tulis ulang logikamu di sini...\n\nmove_right()\nmove_right()";
             initGame();
             clearLog();
-            logMsg(">> Sistem di-reset. Siap menerima instruksi baru.", "text-slate-500");
+            logMsg("Papan diatur ulang. Ayo coba lagi!");
         }
 
-        // Start
         initGame();
-
     </script>
 </body>
-
 </html>
