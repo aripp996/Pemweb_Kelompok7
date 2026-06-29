@@ -42,7 +42,7 @@
         <div class="grass-floor"></div>
 
         <!-- Panel Login -->
-        <div class="login-container">
+        <div class="login-container z-10 relative">
             <div class="title">
                 <h1>LABYRINTH</h1>
                 <p>Casual Coding Game</p>
@@ -76,7 +76,26 @@
     <!-- ADEGAN 1: MAIN MENU (Disembunyikan, muncul setelah login)                 -->
     <!-- ========================================================================= -->
     <div id="screen-menu" class="screen-container hidden z-10">
-        <div class="panel-casual w-[500px] p-8 relative">
+
+        <!-- Dekorasi Background Menu (Diduplikasi dari Login agar konsisten) -->
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <div class="sun">☀️</div>
+        <div class="star star1">⭐</div>
+        <div class="star star2">⭐</div>
+        <div class="star star3">⭐</div>
+        <div class="ghost">👻</div>
+        <div class="tree tree-left">🌳</div>
+        <div class="tree tree-right">🌳</div>
+        <div class="flower flower1">🌼</div>
+        <div class="flower flower2">🌼</div>
+        <div class="flower flower3">🌼</div>
+        <div class="gate">🚪</div>
+        <div class="grass-floor"></div>
+
+        <!-- Panel Menu -->
+        <div class="panel-casual w-[500px] p-8 relative z-20">
             <div
                 class="badge-casual absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-2 text-white text-xl font-black shadow-md">
                 LABYRINTH
@@ -97,7 +116,7 @@
                     </button>
                 </div>
 
-                <!-- Halaman Pengaturan (Disembunyikan secara default) -->
+                <!-- Halaman Pengaturan -->
                 <div id="settingPage" class="hidden">
                     <h1 class="text-3xl text-center font-black text-amber-700 mb-8">PENGATURAN</h1>
                     <p class="font-bold mb-4 text-amber-900">Bahasa Koding</p>
@@ -192,7 +211,7 @@
 
                 <!-- Overlay Status Permainan -->
                 <div id="statusOverlay"
-                    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-[28px] hidden flex-col items-center justify-center z-20">
+                    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-[28px] hidden flex-col items-center justify-center z-30">
                     <div
                         class="bg-white border-8 border-yellow-400 rounded-3xl p-8 flex flex-col items-center shadow-2xl transform scale-110">
                         <i id="statusIcon" class="fa-solid fa-award text-6xl text-yellow-400 mb-4 drop-shadow-md"></i>
