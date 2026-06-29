@@ -45,6 +45,18 @@
             box-shadow: 0 0 0 #4d7c0f, 0 4px 4px rgba(0,0,0,0.2);
         }
 
+        /* Disabled state for the casual button (used while the robot is executing) */
+        .btn-casual:disabled {
+            opacity: 0.75;
+            filter: grayscale(15%);
+            cursor: not-allowed;
+        }
+
+        .btn-casual:disabled:active {
+            transform: none;
+            box-shadow: 0 6px 0 #4d7c0f, 0 10px 10px rgba(0,0,0,0.2);
+        }
+
         .badge-casual {
             background-color: #84cc16;
             border: 4px solid #ffffff;
@@ -128,7 +140,9 @@
         }
 
         /* Log Notifikasi */
-        .log-item { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; margin-bottom: 4px; color: #475569;}
+        /* white-space: pre-line lets a single log entry contain multiple lines
+           (e.g. "Step 1\nmove_right()") while leaving single-line entries untouched */
+        .log-item { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; margin-bottom: 4px; color: #475569; white-space: pre-line; }
         .log-active { border-color: #3b82f6; color: #1d4ed8; font-weight: 800;}
         .log-error { border-color: #ef4444; background: #fee2e2; color: #b91c1c; }
         .log-success { border-color: #22c55e; background: #dcfce7; color: #15803d; }
@@ -144,7 +158,7 @@
         
         <!-- Level Configuration: id added so JS can update level number -->
         <div id="levelBadge" class="badge-casual px-8 py-2 text-white font-black text-2xl -mt-2">
-            LEVEL 1
+            LEVEL 1 / 5
         </div>
 
         <div class="bg-white border-4 border-slate-200 rounded-full px-6 py-2 flex items-center gap-2 shadow-md">
@@ -179,10 +193,10 @@ collect()
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <button onclick="executeCode()" class="btn-casual flex-1 py-3 text-xl font-black">
+                    <button id="runBtn" onclick="executeCode()" class="btn-casual flex-1 py-3 text-xl font-black">
                         <i class="fa-solid fa-play mr-2"></i> JALANKAN
                     </button>
-                    <button onclick="resetGame()" class="bg-rose-400 border-4 border-white rounded-2xl w-16 h-14 flex items-center justify-center text-white text-xl shadow-[0_6px_0_#be123c] active:translate-y-[6px] active:shadow-none">
+                    <button id="resetBtnTop" onclick="resetGame()" class="bg-rose-400 border-4 border-white rounded-2xl w-16 h-14 flex items-center justify-center text-white text-xl shadow-[0_6px_0_#be123c] active:translate-y-[6px] active:shadow-none">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
@@ -351,7 +365,21 @@ collect()`
         let currentMap       = [];
         let robotPos         = { x: 0, y: 0 };
         let collectedCoins   = 0;
+
+        // isExecuting doubles as a general "interaction lock": true while the
+        // robot is running commands AND during the short level-transition delay,
+        // so Reset/Run can't be triggered mid-animation from either state.
         let isExecuting      = false;
+
+        // Movement command lookup table (dx/dy per command).
+        // Replaces a long if/else-if chain — same 4 commands, same behavior,
+        // just a single place to read or extend the move set.
+        const MOVE_DELTAS = {
+            'move_right()': { dx: 1, dy: 0 },
+            'move_left()':  { dx: -1, dy: 0 },
+            'move_down()':  { dx: 0, dy: 1 },
+            'move_up()':    { dx: 0, dy: -1 }
+        };
 
         // ============================================================
         // Load Level: sets everything from scratch for a given level.
@@ -361,31 +389,26 @@ collect()`
             currentLevelIndex = index;
             const level = levels[index];
 
-            // Update level badge in header
-            document.getElementById('levelBadge').innerText = `LEVEL ${level.level}`;
+            // Update level badge in header — now shows progress out of total levels
+            document.getElementById('levelBadge').innerText = `LEVEL ${level.level} / ${levels.length}`;
 
             // Update editor with this level's starter code
             document.getElementById('codeEditor').value = level.starterCode;
 
-            // Reset board state from the level config
-            currentMap     = JSON.parse(JSON.stringify(level.map));
-            robotPos       = { x: level.robotStart.x, y: level.robotStart.y };
-            collectedCoins = 0;
-
-            updateScore();
-            renderBoard();
+            // Reset board state from the level config.
+            // (Delegated to initGame() — it reads levels[currentLevelIndex], which
+            // we just set above, so the two no longer duplicate the same 5 lines.)
+            initGame();
 
             // Hide any active overlay
-            const overlay = document.getElementById('statusOverlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+            hideOverlay();
 
             // Reset console log with a level-specific welcome
             clearLog();
             if (index === 0) {
                 logMsg("Selamat datang! Ketik kodemu dan tekan Jalankan.");
             } else {
-                logMsg(`Level ${level.level} dimulai! Kumpulkan ${level.totalCoins} bintang.`);
+                logMsg(`🎉 Level ${level.level} dimulai!\n\nTarget:\nKumpulkan ${level.totalCoins} bintang.`, "log-success");
             }
         }
 
@@ -425,6 +448,36 @@ collect()`
             document.getElementById('scoreText').innerText = `${collectedCoins} / ${total}`;
         }
 
+        // Overlay visibility helpers — replaces the same two classList lines
+        // that used to be repeated in executeCode(), resetGame(), and loadLevel().
+        function hideOverlay() {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+
+        function showOverlay() {
+            const overlay = document.getElementById('statusOverlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+        }
+
+        // Toggles the busy/idle visual state of the run + reset controls.
+        // Used while commands are executing AND during the brief level-transition delay.
+        function setRunButtonState(isRunning) {
+            const runBtn   = document.getElementById('runBtn');
+            const resetBtn = document.getElementById('resetBtnTop');
+
+            runBtn.disabled   = isRunning;
+            resetBtn.disabled = isRunning;
+            resetBtn.classList.toggle('opacity-50', isRunning);
+            resetBtn.classList.toggle('cursor-not-allowed', isRunning);
+
+            runBtn.innerHTML = isRunning
+                ? '<i class="fa-solid fa-spinner fa-spin mr-2"></i> MENJALANKAN...'
+                : '<i class="fa-solid fa-play mr-2"></i> JALANKAN';
+        }
+
         function logMsg(text, className = "log-item") {
             const consoleDiv = document.getElementById('consoleLog');
             const logEl = document.createElement('div');
@@ -441,104 +494,107 @@ collect()`
         async function executeCode() {
             if (isExecuting) return;
 
-            // Hide overlay and reset the board visually before running
-            const overlay = document.getElementById('statusOverlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
-            initGame();
-            clearLog();
-
-            const codeText = document.getElementById('codeEditor').value;
-            const lines = codeText.split('\n')
-                .map(line => line.trim())
-                .filter(line => line !== '' && !line.startsWith('#'));
-
             isExecuting = true;
-            logMsg("Memulai langkah...", "log-active");
+            setRunButtonState(true);
 
-            const level      = levels[currentLevelIndex];
-            const stepDelay  = 600;
-            let errorOccurred = false;
+            try {
+                // Hide overlay and reset the board visually before running
+                hideOverlay();
+                initGame();
+                clearLog();
 
-            for (let i = 0; i < lines.length; i++) {
-                if (errorOccurred) break;
+                const codeText = document.getElementById('codeEditor').value;
+                const lines = codeText.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '' && !line.startsWith('#'));
 
-                const cmd = lines[i];
-                logMsg(`Menjalankan: ${cmd}`, "log-active");
+                logMsg("Memulai langkah...", "log-active");
 
-                await new Promise(r => setTimeout(r, stepDelay));
+                const level      = levels[currentLevelIndex];
+                const stepDelay  = 600;
+                let errorOccurred = false;
 
-                let newX = robotPos.x;
-                let newY = robotPos.y;
+                for (let i = 0; i < lines.length; i++) {
+                    if (errorOccurred) break;
 
-                if      (cmd === 'move_right()') newX += 1;
-                else if (cmd === 'move_left()')  newX -= 1;
-                else if (cmd === 'move_down()')  newY += 1;
-                else if (cmd === 'move_up()')    newY -= 1;
-                else if (cmd === 'collect()') {
-                    if (currentMap[robotPos.y][robotPos.x] === 2) {
-                        currentMap[robotPos.y][robotPos.x] = 0;
-                        collectedCoins++;
-                        updateScore();
-                        logMsg(`Yeay! Bintang didapatkan!`, "log-success");
-                        renderBoard();
-                    } else {
-                        logMsg(`Ups, tidak ada bintang di sini.`, "log-error");
+                    const cmd = lines[i];
+                    // Console log now shows explicit execution order: "Step N" + the command
+                    logMsg(`Step ${i + 1}\n${cmd}`, "log-active");
+
+                    await new Promise(r => setTimeout(r, stepDelay));
+
+                    if (cmd === 'collect()') {
+                        if (currentMap[robotPos.y][robotPos.x] === 2) {
+                            currentMap[robotPos.y][robotPos.x] = 0;
+                            collectedCoins++;
+                            updateScore();
+                            logMsg(`Yeay! Bintang didapatkan!`, "log-success");
+                            renderBoard();
+                        } else {
+                            logMsg(`Ups, tidak ada bintang di sini.`, "log-error");
+                        }
+                        continue;
                     }
-                    continue;
-                } else {
-                    logMsg(`Kode salah: '${cmd}'`, "log-error");
-                    errorOccurred = true;
-                    showEndScreen(false, "Kode yang kamu ketik tidak dikenali.");
-                    break;
-                }
 
-                if (newX < 0 || newX > 4 || newY < 0 || newY > 4) {
-                    logMsg(`Awas jatuh! Keluar batas.`, "log-error");
-                    errorOccurred = true;
-                    showEndScreen(false, "Karaktermu keluar dari area permainan!");
-                    break;
-                }
-
-                if (currentMap[newY][newX] === 1) {
-                    logMsg(`Aduh! Menabrak blok.`, "log-error");
-                    errorOccurred = true;
-                    showEndScreen(false, "Karaktermu menabrak halangan.");
-                    break;
-                }
-
-                robotPos.x = newX;
-                robotPos.y = newY;
-                renderBoard();
-            }
-
-            if (!errorOccurred) {
-                if (collectedCoins === level.totalCoins) {
-                    logMsg("Hore! Level Selesai.", "log-success");
-                    const isLastLevel = currentLevelIndex === levels.length - 1;
-                    if (isLastLevel) {
-                        showEndScreen(true, "Kamu berhasil menyelesaikan seluruh level!");
-                    } else {
-                        showEndScreen(true, "Kamu berhasil menyelesaikan tantangan ini!");
+                    const delta = MOVE_DELTAS[cmd];
+                    if (!delta) {
+                        logMsg(`Kode salah: '${cmd}'`, "log-error");
+                        errorOccurred = true;
+                        showEndScreen(false, "Kode yang kamu ketik tidak dikenali.");
+                        break;
                     }
-                } else {
-                    logMsg(`Masih kurang ${level.totalCoins - collectedCoins} bintang.`, "log-error");
-                    showEndScreen(false, "Kodenya selesai, tapi masih ada bintang yang tertinggal.");
-                }
-            }
 
-            isExecuting = false;
+                    const newX = robotPos.x + delta.dx;
+                    const newY = robotPos.y + delta.dy;
+
+                    if (newX < 0 || newX > 4 || newY < 0 || newY > 4) {
+                        logMsg(`Awas jatuh! Keluar batas.`, "log-error");
+                        errorOccurred = true;
+                        showEndScreen(false, "Karaktermu keluar dari area permainan!");
+                        break;
+                    }
+
+                    if (currentMap[newY][newX] === 1) {
+                        logMsg(`Aduh! Menabrak blok.`, "log-error");
+                        errorOccurred = true;
+                        showEndScreen(false, "Karaktermu menabrak halangan.");
+                        break;
+                    }
+
+                    robotPos.x = newX;
+                    robotPos.y = newY;
+                    renderBoard();
+                }
+
+                if (!errorOccurred) {
+                    if (collectedCoins === level.totalCoins) {
+                        logMsg("Hore! Level Selesai.", "log-success");
+                        const isLastLevel = currentLevelIndex === levels.length - 1;
+                        if (isLastLevel) {
+                            showEndScreen(true, "Kamu berhasil menyelesaikan seluruh level!");
+                        } else {
+                            showEndScreen(true, "Kamu berhasil menyelesaikan tantangan ini!");
+                        }
+                    } else {
+                        logMsg(`Masih kurang ${level.totalCoins - collectedCoins} bintang.`, "log-error");
+                        showEndScreen(false, "Kodenya selesai, tapi masih ada bintang yang tertinggal.");
+                    }
+                }
+            } finally {
+                // Always restore the buttons, even on an unexpected error —
+                // the player should never get stuck with a disabled run button.
+                isExecuting = false;
+                setRunButtonState(false);
+            }
         }
 
         function showEndScreen(isSuccess, desc) {
-            const overlay  = document.getElementById('statusOverlay');
             const title    = document.getElementById('statusText');
             const descText = document.getElementById('statusDesc');
             const icon     = document.getElementById('statusIcon');
             const nextBtn  = document.getElementById('nextBtn');
 
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
+            showOverlay();
 
             descText.innerText = desc;
 
@@ -569,22 +625,44 @@ collect()`
             }
         }
 
-        // Next Level Logic: advances to the next level in sequence.
-        function nextLevel() {
-            if (currentLevelIndex < levels.length - 1) {
-                loadLevel(currentLevelIndex + 1);
-            }
+        // Next Level Logic: shows a short "Level X selesai! Memuat Level Y..."
+        // transition message, waits ~1 second, then advances to the next level.
+        // Does not touch the overlay's design — only its visibility timing.
+        async function nextLevel() {
+            if (currentLevelIndex >= levels.length - 1) return; // already on the final level
+            if (isExecuting) return; // safety guard, e.g. against a double click
+
+            isExecuting = true; // reuse the busy-lock so Run/Reset can't fire mid-transition
+            setRunButtonState(true);
+
+            const completedLevel = levels[currentLevelIndex].level;
+            const upcomingLevel  = levels[currentLevelIndex + 1].level;
+
+            // Hide the overlay first so the transition message is actually visible
+            // in the console area underneath it.
+            hideOverlay();
+            clearLog();
+            logMsg(`Level ${completedLevel} selesai!`, "log-success");
+            logMsg(`Memuat Level ${upcomingLevel}...`, "log-active");
+
+            await new Promise(r => setTimeout(r, 1000));
+
+            loadLevel(currentLevelIndex + 1);
+
+            isExecuting = false;
+            setRunButtonState(false);
         }
 
         // Restart Game: resets all progress back to Level 1.
         function restartGame() {
+            if (isExecuting) return;
             loadLevel(0);
         }
 
         function resetGame() {
-            const overlay = document.getElementById('statusOverlay');
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+            if (isExecuting) return; // don't allow a reset mid-execution or mid-transition
+
+            hideOverlay();
             initGame();
             clearLog();
             logMsg("Papan diatur ulang. Ayo coba lagi!");
