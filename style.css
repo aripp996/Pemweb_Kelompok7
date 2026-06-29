@@ -1,0 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+/* === GAYA GLOBAL & BACKGROUND === */
+body {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 60%, #4ade80 60%, #22c55e 100%);
+    overflow: hidden;
+}
+
+/* === ELEMEN UI CASUAL (Berlaku untuk Menu & Game) === */
+.panel-casual {
+    background-color: #fde68a;
+    border: 8px solid #ffffff;
+    border-radius: 36px;
+    box-shadow: 0 10px 0 rgba(217, 119, 6, 0.2), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.panel-inner {
+    background-color: #fef3c7;
+    border: 4px solid #f59e0b;
+    border-radius: 24px;
+}
+
+.btn-casual {
+    background-color: #84cc16;
+    border: 4px solid #ffffff;
+    border-radius: 9999px;
+    color: white;
+    font-weight: 900;
+    text-transform: uppercase;
+    box-shadow: 0 6px 0 #4d7c0f, 0 10px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.1s;
+}
+
+.btn-casual:hover {
+    transform: scale(1.02);
+}
+
+.btn-casual:active {
+    transform: translateY(6px);
+    box-shadow: 0 0 0 #4d7c0f, 0 4px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-casual:disabled {
+    opacity: 0.75;
+    filter: grayscale(15%);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.badge-casual {
+    background-color: #84cc16;
+    border: 4px solid #ffffff;
+    border-radius: 9999px;
+    box-shadow: 0 4px 0 #4d7c0f;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* === KHUSUS MENU SETTING === */
+.language-card {
+    background: white;
+    border: 3px solid #f59e0b;
+    border-radius: 15px;
+    padding: 14px;
+    cursor: pointer;
+}
+
+/* === KHUSUS EDITOR & GAME BOARD === */
+textarea {
+    background-color: transparent;
+    color: #78350f;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 1.1rem;
+    resize: none;
+    outline: none;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 4px;
+    width: 100%;
+    max-width: 380px;
+    aspect-ratio: 1/1;
+    background-color: #8b5cf6;
+    padding: 8px;
+    border-radius: 16px;
+    border: 6px solid #ffffff;
+    box-shadow: 0 8px 0 rgba(139, 92, 246, 0.4);
+}
+
+.cell {
+    background-color: #a3e635;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.wall {
+    background-color: #fb923c;
+    box-shadow: inset 0 -6px 0 #ea580c;
+}
+
+.wall::after {
+    content: '\f1bb';
+    font-family: 'FontAwesome';
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.5rem;
+}
+
+.coin::after {
+    content: '\f005';
+    font-family: 'FontAwesome';
+    color: #fbbf24;
+    font-size: 2rem;
+    -webkit-text-stroke: 2px #b45309;
+    animation: float 2s ease-in-out infinite;
+}
+
+.robot::before {
+    content: '\f6e2';
+    font-family: 'FontAwesome';
+    color: #ef4444;
+    font-size: 2.2rem;
+    position: absolute;
+    z-index: 10;
+    -webkit-text-stroke: 2px white;
+    animation: bounce 0.5s infinite alternate;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes bounce {
+    from {
+        transform: scale(1) translateY(0);
+    }
+
+    to {
+        transform: scale(1.1) translateY(-4px);
+    }
+}
+
+/* === LOG KONSOL === */
+.log-item {
+    background: white;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    color: #475569;
+    white-space: pre-line;
+}
+
+.log-active {
+    border-color: #3b82f6;
+    color: #1d4ed8;
+    font-weight: 800;
+}
+
+.log-error {
+    border-color: #ef4444;
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.log-success {
+    border-color: #22c55e;
+    background: #dcfce7;
+    color: #15803d;
+}
