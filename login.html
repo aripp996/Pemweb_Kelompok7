@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Labyrinth</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(
+                to bottom,
+                #7dd3fc 0%,
+                #4fc3f7 55%,
+                #4ade80 55%,
+                #22c55e 100%
+            );
+        }
+
+        /* ===========================
+           CLOUD
+        =========================== */
+        .cloud {
+            position: absolute;
+            width: 180px;
+            height: 60px;
+            background: white;
+            border-radius: 50px;
+            opacity: .9;
+        }
+
+        .cloud::before {
+            content: "";
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
+            top: -30px;
+            left: 25px;
+        }
+
+        .cloud::after {
+            content: "";
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            top: -40px;
+            right: 25px;
+        }
+
+        .cloud1 {
+            top: 80px;
+            animation: cloudMove 35s linear infinite;
+        }
+
+        .cloud2 {
+            top: 180px;
+            animation: cloudMove 45s linear infinite;
+        }
+
+        .cloud3 {
+            top: 280px;
+            animation: cloudMove 55s linear infinite;
+        }
+
+        @keyframes cloudMove {
+            from {
+                left: -250px;
+            }
+            to {
+                left: 120%;
+            }
+        }
+
+        /* ===========================
+           SUN
+        =========================== */
+        .sun {
+            position: absolute;
+            top: 40px;
+            right: 60px;
+            font-size: 70px;
+            animation: rotateSun 12s linear infinite;
+        }
+
+        @keyframes rotateSun {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===========================
+           STAR
+        =========================== */
+        .star {
+            position: absolute;
+            font-size: 28px;
+            animation: blink 2s infinite;
+        }
+
+        .star1 {
+            top: 100px;
+            left: 120px;
+        }
+
+        .star2 {
+            top: 220px;
+            right: 250px;
+        }
+
+        .star3 {
+            top: 320px;
+            left: 280px;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .3;
+                transform: scale(.7);
+            }
+        }
+
+        /* ===========================
+           GHOST
+        =========================== */
+        .ghost {
+            position: absolute;
+            left: 100px;
+            bottom: 170px;
+            font-size: 90px;
+            animation: floatGhost 2s ease-in-out infinite;
+        }
+
+        @keyframes floatGhost {
+            50% {
+                transform: translateY(-18px);
+            }
+        }
+
+        /* ===========================
+           LOGIN CONTAINER
+        =========================== */
+        .login-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ===========================
+           TITLE
+        =========================== */
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title h1 {
+            color: white;
+            font-size: 70px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 4px 4px 0 #0f766e;
+            animation: titleGlow 2s infinite;
+        }
+
+        .title p {
+            color: white;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        @keyframes titleGlow {
+            50% {
+                text-shadow:
+                    0 0 15px white,
+                    0 0 30px yellow,
+                    4px 4px 0 #0f766e;
+            }
+        }
+
+        /* ===========================
+           LOGIN PANEL
+        =========================== */
+        .login-box {
+            width: 450px;
+            background: #fde68a;
+            border: 8px solid white;
+            border-radius: 35px;
+            padding: 40px;
+            box-shadow:
+                0 12px 0 rgba(217, 119, 6, .25),
+                0 25px 35px rgba(0, 0, 0, .18);
+            animation: panelShow .7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            color: #854d0e;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        /* ===========================
+           INPUT BOX
+        =========================== */
+        .input-box {
+            display: flex;
+            align-items: center;
+            background: #fff7d6;
+            border: 4px solid #f59e0b;
+            border-radius: 22px;
+            padding: 15px;
+            margin-bottom: 20px;
+            transition: .3s;
+        }
+
+        .input-box:hover, .input-box:focus-within {
+            transform: scale(1.02);
+            border-color: #d97706;
+        }
+
+        .input-box i {
+            color: #ca8a04;
+            font-size: 22px;
+            margin-right: 15px;
+        }
+
+        .input-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #78350f;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .input-box input::placeholder {
+            color: #b45309;
+        }
+
+        #togglePassword {
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        #togglePassword:hover {
+            transform: scale(1.2);
+        }
+
+        /* ===========================
+           BUTTON
+        =========================== */
+        button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 999px;
+            background: #84cc16;
+            color: white;
+            font-size: 24px;
+            font-weight: 900;
+            border: 4px solid white;
+            cursor: pointer;
+            transition: .15s;
+            box-shadow:
+                0 8px 0 #4d7c0f,
+                0 14px 20px rgba(0, 0, 0, .18);
+        }
+
+        button:hover {
+            transform: scale(1.03);
+            background: #90d820;
+        }
+
+        button:active {
+            transform: translateY(8px);
+            box-shadow: none;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .8;
+        }
+
+        /* ===========================
+           ERROR
+        =========================== */
+        #error {
+            margin-top: 18px;
+            text-align: center;
+            color: #dc2626;
+            font-size: 17px;
+            font-weight: bold;
+            min-height: 25px;
+        }
+
+        /* ===========================
+           TREE
+        =========================== */
+        .tree {
+            position: absolute;
+            bottom: 100px;
+            font-size: 90px;
+            z-index: 2;
+            animation: treeMove 3s ease-in-out infinite;
+        }
+
+        .tree-left {
+            left: 40px;
+        }
+
+        .tree-right {
+            right: 40px;
+        }
+
+        @keyframes treeMove {
+            0%, 100% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(3deg);
+            }
+        }
+
+        /* ===========================
+           FLOWER
+        =========================== */
+        .flower {
+            position: absolute;
+            bottom: 40px;
+            font-size: 35px;
+            z-index: 3;
+            animation: flowerMove 2s ease-in-out infinite;
+        }
+
+        .flower1 {
+            left: 180px;
+        }
+
+        .flower2 {
+            left: 260px;
+        }
+
+        .flower3 {
+            right: 180px;
+        }
+
+        @keyframes flowerMove {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* ===========================
+           GATE
+        =========================== */
+        .gate {
+            position: absolute;
+            bottom: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 90px;
+            z-index: 1;
+            animation: gateGlow 2s infinite;
+        }
+
+        @keyframes gateGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 0px gold);
+            }
+            50% {
+                filter: drop-shadow(0 0 12px gold);
+            }
+        }
+
+        /* ===========================
+           RUMPUT
+        =========================== */
+        body::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 110px;
+            background: #22c55e;
+            z-index: 0;
+        }
+
+        /* ===========================
+           PANEL ANIMATION
+        =========================== */
+        @keyframes panelShow {
+            from {
+                opacity: 0;
+                transform: scale(.7);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ===========================
+           RESPONSIVE
+        =========================== */
+        @media(max-width: 768px) {
+            .login-box {
+                width: 90%;
+                padding: 30px;
+            }
+
+            .title h1 {
+                font-size: 50px;
+            }
+
+            .tree,
+            .gate,
+            .ghost {
+                font-size: 65px;
+            }
+
+            .sun {
+                font-size: 50px;
+            }
+            
+            .flower, .star {
+                display: none; /* Menyembunyikan dekorasi kecil pada layar HP agar tidak bertumpuk */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AWAN -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+
+    <!-- MATAHARI -->
+    <div class="sun">☀️</div>
+
+    <!-- BINTANG -->
+    <div class="star star1">⭐</div>
+    <div class="star star2">⭐</div>
+    <div class="star star3">⭐</div>
+
+    <!-- GHOST -->
+    <div class="ghost">👻</div>
+
+    <!-- POHON -->
+    <div class="tree tree-left">🌳</div>
+    <div class="tree tree-right">🌳</div>
+
+    <!-- BUNGA -->
+    <div class="flower flower1">🌼</div>
+    <div class="flower flower2">🌼</div>
+    <div class="flower flower3">🌼</div>
+
+    <!-- GERBANG -->
+    <div class="gate">🚪</div>
+
+    <!-- LOGIN -->
+    <div class="login-container">
+        <div class="title">
+            <h1>LABYRINTH</h1>
+            <p>Casual Coding Game</p>
+        </div>
+
+        <div class="login-box">
+            <h2>LOGIN</h2>
+
+            <!-- FORM -->
+            <form id="loginForm" action="login.php" method="POST" autocomplete="off">
+                <!-- USERNAME -->
+                <div class="input-box">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" name="username" placeholder="Masukkan Username">
+                </div>
+
+                <!-- PASSWORD -->
+                <div class="input-box">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" name="password" placeholder="Masukkan Password">
+                    <span id="togglePassword">
+                        <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                    </span>
+                </div>
+
+                <button type="submit" id="loginButton">
+                    <i class="fa-solid fa-right-to-bracket"></i> MASUK
+                </button>
+
+                <p id="error"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // =========================================
+        // SHOW / HIDE PASSWORD
+        // =========================================
+        const passwordInput = document.getElementById("password");
+        const togglePassword = document.getElementById("togglePassword");
+        const eyeIcon = document.getElementById("eyeIcon");
+
+        togglePassword.addEventListener("click", function () {
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        });
+
+        // =========================================
+        // VALIDASI LOGIN
+        // =========================================
+        const loginForm = document.getElementById("loginForm");
+
+        loginForm.addEventListener("submit", function(e) {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const error = document.getElementById("error");
+            const button = document.getElementById("loginButton");
+
+            error.style.color = "#dc2626";
+
+            // Username & Password kosong
+            if (username === "" && password === "") {
+                e.preventDefault();
+                error.innerHTML = "⚠ Username dan Password wajib diisi!";
+                return;
+            }
+
+            // Username kosong
+            if (username === "") {
+                e.preventDefault();
+                error.innerHTML = "⚠ Username wajib diisi!";
+                return;
+            }
+
+            // Password kosong
+            if (password === "") {
+                e.preventDefault();
+                error.innerHTML = "⚠ Password wajib diisi!";
+                return;
+            }
+
+            // Jika validasi sukses
+            e.preventDefault();
+
+            error.style.color = "#16a34a";
+            error.innerHTML = "✅ Login Berhasil";
+
+            button.disabled = true;
+
+            button.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> MEMASUKI GAME...';
+
+            setTimeout(function(){
+
+                window.location.href = "menu.html";
+
+            },1500);
+        });
+    </script>
+</body>
+</html>
