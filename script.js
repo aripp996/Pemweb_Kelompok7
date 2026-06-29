@@ -1,20 +1,98 @@
+/* ========================================================================= */
+/* 1. SISTEM LOGIN                                                           */
+/* ========================================================================= */
+const passwordInput = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
+const eyeIcon = document.getElementById("eyeIcon");
+const loginForm = document.getElementById("loginForm");
+
+// Show/Hide Password
+togglePassword.addEventListener("click", function () {
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+    }
+});
+
+// Validasi Login
+loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const error = document.getElementById("error");
+    const button = document.getElementById("loginButton");
+
+    error.style.color = "#dc2626";
+
+    if (username === "" && pass === "") {
+        error.innerHTML = "⚠ Username dan Password wajib diisi!";
+        return;
+    }
+    if (username === "") {
+        error.innerHTML = "⚠ Username wajib diisi!";
+        return;
+    }
+    if (pass === "") {
+        error.innerHTML = "⚠ Password wajib diisi!";
+        return;
+    }
+
+    // Jika berhasil
+    error.style.color = "#16a34a";
+    error.innerHTML = "✅ Login Berhasil";
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> MEMASUKI GAME...';
+
+    // Pindah ke Main Menu setelah delay 1.5 detik
+    setTimeout(function () {
+        document.getElementById('screen-login').classList.remove('active-screen');
+        navigateSPA('menu');
+        // Reset form login untuk nanti jika user logout
+        loginForm.reset();
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i> MASUK';
+        error.innerHTML = "";
+    }, 1500);
+});
+
+/* ========================================================================= */
+/* 2. SUTRADARA NAVIGASI (SISTEM SPA)                                        */
+/* ========================================================================= */
 function navigateSPA(target) {
     const screenMenu = document.getElementById('screen-menu');
     const screenGame = document.getElementById('screen-game');
 
     if (target === 'game') {
+        screenMenu.classList.remove('active-screen');
         screenMenu.classList.add('hidden');
         screenGame.classList.remove('hidden');
-        screenGame.classList.add('flex');
-        loadLevel(0); // Mulai game selalu dari Level 1 saat start ditekan
+        screenGame.classList.add('active-screen', 'flex');
+        loadLevel(0); // Mulai game selalu dari Level 1
     } else if (target === 'menu') {
+        screenGame.classList.remove('active-screen', 'flex');
         screenGame.classList.add('hidden');
-        screenGame.classList.remove('flex');
         screenMenu.classList.remove('hidden');
+        screenMenu.classList.add('active-screen');
     }
 }
 
-// --- 2. LOGIKA MENU PENGATURAN ---
+function logoutSPA() {
+    const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+    if (confirmLogout) {
+        document.getElementById('screen-menu').classList.remove('active-screen');
+        document.getElementById('screen-menu').classList.add('hidden');
+        document.getElementById('screen-login').classList.add('active-screen');
+    }
+}
+
+/* ========================================================================= */
+/* 3. LOGIKA MENU PENGATURAN                                                 */
+/* ========================================================================= */
 function toggleSettingPage(showSetting) {
     if (showSetting) {
         document.getElementById("menuPage").classList.add("hidden");
@@ -32,15 +110,17 @@ function saveLanguage() {
     toggleSettingPage(false);
 }
 
-window.onload = function () {
+window.addEventListener('load', function () {
     const saved = localStorage.getItem("language");
     if (saved) {
         const radio = document.querySelector(`input[value="${saved}"]`);
         if (radio) radio.checked = true;
     }
-}
+});
 
-// --- 3. MESIN GAME MULTI-LEVEL ---
+/* ========================================================================= */
+/* 4. MESIN GAME MULTI-LEVEL                                                 */
+/* ========================================================================= */
 const levels = [
     {
         level: 1,

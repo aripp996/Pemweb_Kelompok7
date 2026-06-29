@@ -1,14 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
-
-/* === GAYA GLOBAL & BACKGROUND === */
+/* ========================================================================= */
+/* BASE STYLES & LAYOUT                                                      */
+/* ========================================================================= */
 body {
     margin: 0;
+    padding: 0;
     font-family: 'Nunito', sans-serif;
     background: linear-gradient(to bottom, #7dd3fc 0%, #38bdf8 60%, #4ade80 60%, #22c55e 100%);
     overflow: hidden;
+    height: 100vh;
+    width: 100vw;
 }
 
-/* === ELEMEN UI CASUAL (Berlaku untuk Menu & Game) === */
+/* Mengatur container agar layarnya saling menggantikan (SPA Behavior) */
+.screen-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none; /* Default tersembunyi */
+    justify-content: center;
+    align-items: center;
+}
+.screen-container.active-screen { display: flex; }
+.hidden { display: none !important; }
+
+/* ========================================================================= */
+/* ELEMEN UI CASUAL GLOBAL (Berlaku untuk Login, Menu, & Game)                 */
+/* ========================================================================= */
 .panel-casual {
     background-color: #fde68a;
     border: 8px solid #ffffff;
@@ -30,13 +49,11 @@ body {
     font-weight: 900;
     text-transform: uppercase;
     box-shadow: 0 6px 0 #4d7c0f, 0 10px 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.1s;
+    transition: all 0.15s;
+    cursor: pointer;
 }
 
-.btn-casual:hover {
-    transform: scale(1.02);
-}
-
+.btn-casual:hover { transform: scale(1.02); }
 .btn-casual:active {
     transform: translateY(6px);
     box-shadow: 0 0 0 #4d7c0f, 0 4px 4px rgba(0, 0, 0, 0.2);
@@ -56,20 +73,81 @@ body {
     box-shadow: 0 4px 0 #4d7c0f;
 }
 
-.hidden {
-    display: none !important;
+/* ========================================================================= */
+/* KHUSUS HALAMAN LOGIN (Dekorasi & Form)                                    */
+/* ========================================================================= */
+.title { text-align: center; margin-bottom: 30px; }
+.title h1 {
+    color: white; font-size: 70px; font-weight: 900; letter-spacing: 2px;
+    text-shadow: 4px 4px 0 #0f766e;
+    animation: titleGlow 2s infinite;
 }
+.title p { color: white; font-size: 22px; font-weight: 800; }
+@keyframes titleGlow { 50% { text-shadow: 0 0 15px white, 0 0 30px yellow, 4px 4px 0 #0f766e; } }
 
-/* === KHUSUS MENU SETTING === */
+.login-box {
+    width: 450px; background: #fde68a; border: 8px solid white; border-radius: 35px;
+    padding: 40px; z-index: 10; position: relative;
+    box-shadow: 0 12px 0 rgba(217, 119, 6, .25), 0 25px 35px rgba(0, 0, 0, .18);
+    animation: panelShow .7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.login-box h2 { text-align: center; color: #854d0e; font-size: 36px; margin-bottom: 30px; font-weight: 900; }
+
+.input-box {
+    display: flex; align-items: center; background: #fff7d6;
+    border: 4px solid #f59e0b; border-radius: 22px; padding: 15px; margin-bottom: 20px;
+    transition: .3s;
+}
+.input-box:hover, .input-box:focus-within { transform: scale(1.02); border-color: #d97706; }
+.input-box i { color: #ca8a04; font-size: 22px; margin-right: 15px; }
+.input-box input { flex: 1; border: none; outline: none; background: transparent; color: #78350f; font-size: 20px; font-weight: bold; }
+.input-box input::placeholder { color: #b45309; }
+#togglePassword { cursor: pointer; transition: .3s; }
+#togglePassword:hover { transform: scale(1.2); }
+#error { margin-top: 18px; text-align: center; color: #dc2626; font-size: 17px; font-weight: bold; min-height: 25px; }
+
+/* Animasi Background Lingkungan Alam Halaman Login */
+.cloud { position: absolute; width: 180px; height: 60px; background: white; border-radius: 50px; opacity: .9; }
+.cloud::before { content: ""; position: absolute; width: 70px; height: 70px; background: white; border-radius: 50%; top: -30px; left: 25px; }
+.cloud::after { content: ""; position: absolute; width: 90px; height: 90px; background: white; border-radius: 50%; top: -40px; right: 25px; }
+.cloud1 { top: 80px; animation: cloudMove 35s linear infinite; }
+.cloud2 { top: 180px; animation: cloudMove 45s linear infinite; }
+.cloud3 { top: 280px; animation: cloudMove 55s linear infinite; }
+@keyframes cloudMove { from { left: -250px; } to { left: 120%; } }
+
+.sun { position: absolute; top: 40px; right: 60px; font-size: 70px; animation: rotateSun 12s linear infinite; }
+@keyframes rotateSun { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.star { position: absolute; font-size: 28px; animation: blink 2s infinite; }
+.star1 { top: 100px; left: 120px; } .star2 { top: 220px; right: 250px; } .star3 { top: 320px; left: 280px; }
+@keyframes blink { 50% { opacity: .3; transform: scale(.7); } }
+
+.ghost { position: absolute; left: 100px; bottom: 170px; font-size: 90px; animation: floatGhost 2s ease-in-out infinite; z-index: 2;}
+@keyframes floatGhost { 50% { transform: translateY(-18px); } }
+
+.tree { position: absolute; bottom: 100px; font-size: 90px; z-index: 2; animation: treeMove 3s ease-in-out infinite; }
+.tree-left { left: 40px; } .tree-right { right: 40px; }
+@keyframes treeMove { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3deg); } }
+
+.flower { position: absolute; bottom: 40px; font-size: 35px; z-index: 3; animation: flowerMove 2s ease-in-out infinite; }
+.flower1 { left: 180px; } .flower2 { left: 260px; } .flower3 { right: 180px; }
+@keyframes flowerMove { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+
+.gate { position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%); font-size: 90px; z-index: 1; animation: gateGlow 2s infinite; }
+@keyframes gateGlow { 0%, 100% { filter: drop-shadow(0 0 0px gold); } 50% { filter: drop-shadow(0 0 12px gold); } }
+.grass-floor { position: absolute; bottom: 0; left: 0; width: 100%; height: 110px; background: #22c55e; z-index: 0; }
+@keyframes panelShow { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
+
+/* ========================================================================= */
+/* KHUSUS MENU SETTING                                                       */
+/* ========================================================================= */
 .language-card {
-    background: white;
-    border: 3px solid #f59e0b;
-    border-radius: 15px;
-    padding: 14px;
-    cursor: pointer;
+    background: white; border: 3px solid #f59e0b; border-radius: 15px; padding: 14px; cursor: pointer; color: #78350f; font-weight: 700;
 }
 
-/* === KHUSUS EDITOR & GAME BOARD === */
+/* ========================================================================= */
+/* KHUSUS EDITOR KODE & GAME BOARD                                           */
+/* ========================================================================= */
 textarea {
     background-color: transparent;
     color: #78350f;
@@ -84,107 +162,45 @@ textarea {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(5, 1fr);
-    gap: 4px;
-    width: 100%;
-    max-width: 380px;
-    aspect-ratio: 1/1;
-    background-color: #8b5cf6;
-    padding: 8px;
-    border-radius: 16px;
-    border: 6px solid #ffffff;
+    gap: 4px; width: 100%; max-width: 380px; aspect-ratio: 1/1;
+    background-color: #8b5cf6; padding: 8px; border-radius: 16px; border: 6px solid #ffffff;
     box-shadow: 0 8px 0 rgba(139, 92, 246, 0.4);
 }
 
 .cell {
-    background-color: #a3e635;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
-    transition: all 0.2s;
+    background-color: #a3e635; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1); transition: all 0.2s;
 }
 
-.wall {
-    background-color: #fb923c;
-    box-shadow: inset 0 -6px 0 #ea580c;
-}
-
-.wall::after {
-    content: '\f1bb';
-    font-family: 'FontAwesome';
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 1.5rem;
-}
+.wall { background-color: #fb923c; box-shadow: inset 0 -6px 0 #ea580c; }
+.wall::after { content: '\f1bb'; font-family: 'FontAwesome'; color: rgba(255, 255, 255, 0.5); font-size: 1.5rem; }
 
 .coin::after {
-    content: '\f005';
-    font-family: 'FontAwesome';
-    color: #fbbf24;
-    font-size: 2rem;
-    -webkit-text-stroke: 2px #b45309;
-    animation: float 2s ease-in-out infinite;
+    content: '\f005'; font-family: 'FontAwesome'; color: #fbbf24; font-size: 2rem;
+    -webkit-text-stroke: 2px #b45309; animation: float 2s ease-in-out infinite;
 }
 
 .robot::before {
-    content: '\f6e2';
-    font-family: 'FontAwesome';
-    color: #ef4444;
-    font-size: 2.2rem;
-    position: absolute;
-    z-index: 10;
-    -webkit-text-stroke: 2px white;
-    animation: bounce 0.5s infinite alternate;
+    content: '\f6e2'; font-family: 'FontAwesome'; color: #ef4444; font-size: 2.2rem;
+    position: absolute; z-index: 10; -webkit-text-stroke: 2px white; animation: bounce 0.5s infinite alternate;
 }
 
-@keyframes float {
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes bounce { from { transform: scale(1) translateY(0); } to { transform: scale(1.1) translateY(-4px); } }
 
-    0%,
-    100% {
-        transform: translateY(0);
-    }
+/* ========================================================================= */
+/* LOG KONSOL                                                                */
+/* ========================================================================= */
+.log-item { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 4px 8px; margin-bottom: 4px; color: #475569; white-space: pre-line; }
+.log-active { border-color: #3b82f6; color: #1d4ed8; font-weight: 800; }
+.log-error { border-color: #ef4444; background: #fee2e2; color: #b91c1c; }
+.log-success { border-color: #22c55e; background: #dcfce7; color: #15803d; }
 
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-@keyframes bounce {
-    from {
-        transform: scale(1) translateY(0);
-    }
-
-    to {
-        transform: scale(1.1) translateY(-4px);
-    }
-}
-
-/* === LOG KONSOL === */
-.log-item {
-    background: white;
-    border: 2px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 4px 8px;
-    margin-bottom: 4px;
-    color: #475569;
-    white-space: pre-line;
-}
-
-.log-active {
-    border-color: #3b82f6;
-    color: #1d4ed8;
-    font-weight: 800;
-}
-
-.log-error {
-    border-color: #ef4444;
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.log-success {
-    border-color: #22c55e;
-    background: #dcfce7;
-    color: #15803d;
+/* Responsive Login */
+@media(max-width: 768px) {
+    .login-box { width: 90%; padding: 30px; }
+    .title h1 { font-size: 50px; }
+    .tree, .gate, .ghost { font-size: 65px; }
+    .sun { font-size: 50px; }
+    .flower, .star { display: none; }
 }
