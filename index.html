@@ -213,12 +213,34 @@
                 <div id="statusOverlay"
                     class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm rounded-[28px] hidden flex-col items-center justify-center z-30">
                     <div
-                        class="bg-white border-8 border-yellow-400 rounded-3xl p-8 flex flex-col items-center shadow-2xl transform scale-110">
-                        <i id="statusIcon" class="fa-solid fa-award text-6xl text-yellow-400 mb-4 drop-shadow-md"></i>
-                        <h1 id="statusText" class="text-3xl font-black text-slate-800 mb-2">HEBAT!</h1>
-                        <p id="statusDesc" class="text-slate-500 font-bold mb-6 text-center">Kamu berhasil menyelesaikan
-                            level ini.</p>
-                        <div class="flex gap-4">
+                        class="bg-white border-8 border-yellow-400 rounded-3xl status-card-v2 flex flex-col items-center shadow-2xl transform scale-110">
+                        <i id="statusIcon" class="fa-solid fa-award text-6xl text-yellow-400 drop-shadow-md"></i>
+                        <h1 id="statusText" class="text-3xl font-black text-slate-800">HEBAT!</h1>
+                        <p id="statusDesc" class="text-slate-500 font-bold text-center status-desc-v2">Kamu berhasil
+                            menyelesaikan level ini.</p>
+
+                        <!-- Mission Rating: hanya tampil saat level berhasil (success). -->
+                        <!-- Hidden secara default; ditampilkan/disembunyikan oleh showEndScreen() di script.js -->
+                        <div id="ratingBlock" class="hidden rating-block-v2 w-full">
+                            <div class="panel-inner rating-card-v2 flex flex-col items-center text-center">
+                                <p id="ratingStars" class="rating-stars-v2">⭐⭐⭐</p>
+                                <p id="ratingLabel" class="font-black text-amber-700 rating-label-v2">Perfect!</p>
+                                <p id="ratingDesc" class="text-slate-500 font-bold rating-desc-v2">Excellent! Kamu
+                                    menyelesaikan level dengan sangat efisien.</p>
+                                <div class="stats-grid-v2 font-bold text-amber-900">
+                                    <div class="stat-row-v2">
+                                        <span class="stat-label-v2">Commands Used</span>
+                                        <span class="stat-value-v2" id="commandsUsedText">0</span>
+                                    </div>
+                                    <div class="stat-row-v2">
+                                        <span class="stat-label-v2">Optimal Moves</span>
+                                        <span class="stat-value-v2" id="optimalMovesText">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 buttons-row-v2">
                             <button onclick="resetGame()"
                                 class="bg-slate-300 border-4 border-white text-slate-600 rounded-full w-14 h-14 text-xl shadow-[0_4px_0_#94a3b8] active:translate-y-[4px] active:shadow-none">
                                 <i class="fa-solid fa-rotate-right"></i>

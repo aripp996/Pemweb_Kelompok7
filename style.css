@@ -196,6 +196,176 @@ textarea {
 .log-error { border-color: #ef4444; background: #fee2e2; color: #b91c1c; }
 .log-success { border-color: #22c55e; background: #dcfce7; color: #15803d; }
 
+/* ========================================================================= */
+/* SUCCESS OVERLAY - VERSION 2 LAYOUT (Mission Rating Spacing Pass)         */
+/* ========================================================================= */
+
+/* --- Overlay: lepas dari batas panel kanan, jadi modal full-viewport.
+   Sebelumnya overlay terkunci di dalam panel SIMULASI (w-1/2 layar) karena
+   posisinya "absolute" relatif terhadap section panel. Diubah ke "fixed"
+   supaya relatif terhadap seluruh viewport browser, sehingga popup bisa
+   benar-benar melebar dan terpusat di tengah halaman, bukan cuma di
+   setengah layar kanan. Aman karena tidak ada ancestor (panel-casual,
+   section, screen-container) yang memiliki transform/perspective, dan
+   showOverlay()/hideOverlay() di script.js hanya toggle class
+   "hidden"/"flex", tidak pernah menyentuh "absolute", jadi tidak ada
+   logic JS yang perlu diubah. */
+#statusOverlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999;
+}
+
+/* --- Popup container: lebar penuh, lega, tidak lagi terjebak panel --- */
+.status-card-v2 {
+    width: 560px;
+    max-width: 90vw;
+    padding: 40px 48px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* --- Icon & Title: pakai ID selector, BUKAN class.
+   Alasan: showEndScreen() di script.js menulis ulang seluruh
+   `className` icon dan title (title.className = "...", icon.className = "...")
+   setiap kali overlay sukses/gagal ditampilkan. Kalau spacing ditaruh
+   lewat class custom, class itu otomatis terhapus tiap kali JS jalan.
+   ID selector tidak mungkin hilang karena ID tidak pernah disentuh JS,
+   sehingga spacing ini selalu konsisten tampil. !important dipakai karena
+   Tailwind utility (mb-2/mb-4) yang ditulis ulang JS punya specificity
+   yang sama dengan class biasa, jadi tanpa !important hasilnya tidak
+   reliable (bergantung urutan stylesheet). */
+#statusIcon {
+    margin-bottom: 18px !important;
+}
+
+#statusText {
+    margin-bottom: 10px !important;
+    text-align: center !important;
+}
+
+/* --- Description --- */
+.status-desc-v2 {
+    margin-bottom: 26px;
+    line-height: 1.5;
+    padding: 0 8px;
+}
+
+/* --- Mission Rating block wrapper: separator dari deskripsi di atasnya --- */
+.rating-block-v2 {
+    margin-bottom: 26px;
+    padding-top: 22px;
+    border-top: 3px dashed rgba(245, 158, 11, 0.35);
+}
+
+/* --- Mission Rating card: padding lebih lega, hierarki lebih jelas --- */
+.rating-card-v2 {
+    padding: 22px 28px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.rating-stars-v2 {
+    font-size: 2.1rem;
+    margin-bottom: 8px;
+    letter-spacing: 4px;
+}
+
+.rating-label-v2 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.rating-desc-v2 {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 20px;
+    padding: 0 6px;
+    max-width: 380px;
+}
+
+/* --- Statistics: baris terpisah, jarak jelas antara Commands & Optimal --- */
+.stats-grid-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding-top: 14px;
+    border-top: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.stat-row-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 0.95rem;
+    padding: 0 4px;
+}
+
+.stat-label-v2 {
+    color: #92400e;
+    opacity: 0.85;
+}
+
+.stat-value-v2 {
+    font-size: 1.05rem;
+    color: #78350f;
+    background: rgba(245, 158, 11, 0.12);
+    padding: 2px 14px;
+    border-radius: 9999px;
+    min-width: 36px;
+    text-align: center;
+}
+
+/* --- Buttons: jarak lebih jauh dari statistik di atasnya --- */
+.buttons-row-v2 {
+    margin-top: 30px;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE — SUCCESS OVERLAY V2                                          */
+/* ========================================================================= */
+@media (max-width: 768px) {
+    .status-card-v2 {
+        width: 90vw;
+        padding: 30px 26px;
+    }
+
+    .rating-card-v2 {
+        padding: 18px 18px;
+    }
+
+    .rating-desc-v2 {
+        max-width: 100%;
+        font-size: 0.88rem;
+    }
+
+    #statusText {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-card-v2 {
+        width: 94vw;
+        padding: 24px 18px;
+    }
+
+    .stat-row-v2 {
+        font-size: 0.85rem;
+    }
+
+    .stat-value-v2 {
+        font-size: 0.95rem;
+        padding: 2px 10px;
+    }
+
+    .rating-stars-v2 {
+        font-size: 1.8rem;
+    }
+}
+
 /* Responsive Login */
 @media(max-width: 768px) {
     .login-box { width: 90%; padding: 30px; }

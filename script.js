@@ -127,6 +127,8 @@ const levels = [
         map: [[0, 0, 2, 0, 0], [1, 1, 0, 1, 0], [0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 2, 0, 0, 0]],
         robotStart: { x: 0, y: 0 },
         totalCoins: 2,
+        // Mission Rating: jumlah langkah pada solusi optimal yang sudah diverifikasi
+        optimalMoves: 13,
         starterCode: `# Kumpulkan 2 Bintang \n# Hindari blok oranye\n\nmove_right()\nmove_right()\ncollect()\nmove_down()\nmove_down()\nmove_right()\nmove_right()\nmove_down()\nmove_down()\nmove_left()\nmove_left()\nmove_left()\ncollect()`
     },
     {
@@ -134,6 +136,7 @@ const levels = [
         map: [[0, 0, 0, 0, 2], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0], [1, 0, 1, 0, 1], [2, 0, 0, 0, 0]],
         robotStart: { x: 0, y: 0 },
         totalCoins: 2,
+        optimalMoves: 14,
         starterCode: `# Level 2: Kumpulkan 2 Bintang\n# Jalur lebih berliku, perhatikan dinding!\n\n`
     },
     {
@@ -141,6 +144,7 @@ const levels = [
         map: [[0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [2, 0, 0, 0, 2], [0, 1, 0, 1, 0], [0, 0, 2, 0, 0]],
         robotStart: { x: 2, y: 0 },
         totalCoins: 3,
+        optimalMoves: 19,
         starterCode: `# Level 3: Kumpulkan 3 Bintang\n# Posisi awalmu ada di tengah papan!\n\n`
     },
     {
@@ -148,6 +152,7 @@ const levels = [
         map: [[0, 1, 2, 1, 0], [0, 0, 0, 0, 0], [1, 0, 1, 0, 1], [0, 0, 0, 0, 0], [0, 1, 2, 0, 2]],
         robotStart: { x: 0, y: 0 },
         totalCoins: 3,
+        optimalMoves: 15,
         starterCode: `# Level 4: Kumpulkan 3 Bintang\n# Rintangan semakin kompleks, hati-hati!\n\n`
     },
     {
@@ -155,6 +160,7 @@ const levels = [
         map: [[2, 0, 1, 0, 2], [0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0], [2, 0, 1, 0, 2]],
         robotStart: { x: 2, y: 1 },
         totalCoins: 4,
+        optimalMoves: 23,
         starterCode: `# LEVEL FINAL: Kumpulkan 4 Bintang!\n# Kamu mulai di tengah. Butuh strategi terbaik!\n\n`
     }
 ];
@@ -258,6 +264,45 @@ function clearLog() {
     document.getElementById('consoleLog').innerHTML = '';
 }
 
+/* ========================================================================= */
+/* 5. MISSION RATING (STAR RATING) SYSTEM                                    */
+/* ========================================================================= */
+// Generic star calculator — works for ANY level automatically.
+// No per-level if-else: it only ever looks at (actual vs level.optimalMoves).
+//
+// Thresholds:
+//   actual === optimal           → 3 stars, "Perfect!"
+//   actual <= optimal + 3        → 2 stars, "Good!"
+//   actual >  optimal + 3        → 1 star,  "Completed"
+function calculateStars(actualCommands, optimalMoves) {
+    if (actualCommands <= optimalMoves) {
+        // Player matched (or, since optimal is the verified minimal solution,
+        // could not realistically be lower — treat <= as a perfect clear)
+        return {
+            stars: 3,
+            label: "Perfect!",
+            desc: "Excellent! Kamu menyelesaikan level dengan sangat efisien."
+        };
+    }
+    if (actualCommands <= optimalMoves + 3) {
+        return {
+            stars: 2,
+            label: "Good!",
+            desc: "Bagus! Level berhasil diselesaikan dengan beberapa langkah tambahan."
+        };
+    }
+    return {
+        stars: 1,
+        label: "Completed",
+        desc: "Level berhasil diselesaikan, tetapi masih bisa dioptimalkan."
+    };
+}
+
+// Renders "⭐⭐⭐" / "⭐⭐" / "⭐" style strings.
+function renderStarString(starCount) {
+    return '⭐'.repeat(starCount);
+}
+
 async function executeCode() {
     if (isExecuting) return;
     isExecuting = true;
@@ -330,10 +375,12 @@ async function executeCode() {
         if (!errorOccurred) {
             if (collectedCoins === level.totalCoins) {
                 logMsg("Hore! Level Selesai.", "log-success");
+                // Mission Rating: actual commands used = total non-comment lines executed
+                const actualCommands = lines.length;
                 if (currentLevelIndex === levels.length - 1) {
-                    showEndScreen(true, "Kamu berhasil menyelesaikan seluruh level!");
+                    showEndScreen(true, "Kamu berhasil menyelesaikan seluruh level!", actualCommands);
                 } else {
-                    showEndScreen(true, "Kamu berhasil menyelesaikan tantangan ini!");
+                    showEndScreen(true, "Kamu berhasil menyelesaikan tantangan ini!", actualCommands);
                 }
             } else {
                 logMsg(`Masih kurang ${level.totalCoins - collectedCoins} bintang.`, "log-error");
@@ -346,11 +393,12 @@ async function executeCode() {
     }
 }
 
-function showEndScreen(isSuccess, desc) {
+function showEndScreen(isSuccess, desc, actualCommands = null) {
     const title = document.getElementById('statusText');
     const descText = document.getElementById('statusDesc');
     const icon = document.getElementById('statusIcon');
     const nextBtn = document.getElementById('nextBtn');
+    const ratingBlock = document.getElementById('ratingBlock');
 
     showOverlay();
     descText.innerText = desc;
@@ -359,18 +407,31 @@ function showEndScreen(isSuccess, desc) {
         const isLastLevel = currentLevelIndex === levels.length - 1;
         title.className = "text-3xl font-black text-green-500 mb-2";
 
+        // Mission Rating: compute and render stars for this level automatically
+        const level = levels[currentLevelIndex];
+        const result = calculateStars(actualCommands, level.optimalMoves);
+
+        document.getElementById('ratingStars').innerText = renderStarString(result.stars);
+        document.getElementById('ratingLabel').innerText = result.label;
+        document.getElementById('ratingDesc').innerText = result.desc;
+        document.getElementById('commandsUsedText').innerText = actualCommands;
+        document.getElementById('optimalMovesText').innerText = level.optimalMoves;
+        ratingBlock.classList.remove('hidden');
+
         if (isLastLevel) {
             title.innerText = "SELAMAT!";
             icon.className = "fa-solid fa-trophy text-6xl text-yellow-400 mb-4 drop-shadow-md";
             nextBtn.innerHTML = 'MAIN LAGI <i class="fa-solid fa-rotate-left ml-2"></i>';
             nextBtn.onclick = restartGame;
         } else {
-            title.innerText = "HEBAT!";
+            title.innerText = "LEVEL SELESAI!";
             icon.className = "fa-solid fa-award text-6xl text-yellow-400 mb-4 drop-shadow-md";
             nextBtn.innerHTML = 'LANJUT <i class="fa-solid fa-forward-step ml-2"></i>';
             nextBtn.onclick = nextLevel;
         }
     } else {
+        // Failure: hide the rating block, keep original failure overlay untouched
+        ratingBlock.classList.add('hidden');
         title.innerText = "YAHH GAGAL!";
         title.className = "text-3xl font-black text-red-500 mb-2";
         icon.className = "fa-solid fa-face-frown-open text-6xl text-red-400 mb-4 drop-shadow-md";
